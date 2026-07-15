@@ -17,7 +17,7 @@ export default function App() {
   async function getTodos() {
     const { data, error } = await supabase
       .from('todos')
-      .select('*');
+      .select('*, categories (id, name, color )') // Selecciona todos los campos de la tabla 'todos' y el campo 'name' de la tabla relacionada 'category_id';
       console.log('Todos:', data, error);
       if (error) {
         console.error('Error fetching todos:', error);
@@ -27,9 +27,7 @@ export default function App() {
     
     return { data, error };
   }
-
-  console.log(status)
-
+  
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -118,7 +116,7 @@ export default function App() {
                       <article className="rounded-3xl bg-slate-950/80 p-4">
                         <div key={todo.id} className="flex items-center justify-between gap-4">
                           <h3 className="text-lg font-semibold">{todo.title}</h3>
-                          <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300">{todo.category}</span>
+                          <span className={`rounded-full ${todo.categories?.color === 'negro' ? 'bg-slate-500' : todo.categories?.color === 'azul' ? 'bg-blue-500' : 'bg-amber-500/15' } px-3 py-1 text-xs font-semibold text-white`}>{todo.categories?.name}</span>
                         </div>
                         <p className="mt-3 text-sm text-slate-400">{todo.description}</p>
                         <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
