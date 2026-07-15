@@ -1,4 +1,36 @@
+import { createContext, useContext, useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import Status from './components/Status.jsx';
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY); // Inicializa el cliente de Supabase con las variables de entorno
+
+
 export default function App() {
+  const [todos, setTodos] = useState([]);
+
+  useEffect(() => {
+    getTodos()
+  
+  }, []);
+
+  // LEER (Todas las Todos)
+  async function getTodos() {
+    const { data, error } = await supabase
+      .from('todos')
+      .select('*');
+      console.log('Todos:', data, error);
+      if (error) {
+        console.error('Error fetching todos:', error);
+      } else {
+        setTodos(data);
+      }
+    
+    return { data, error };
+  }
+
+  console.log(status)
+
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
@@ -11,6 +43,7 @@ export default function App() {
             </p>
           </div>
 
+          {/* Tareas Pendientes */}
           <div className="mt-6 flex flex-col gap-3 sm:mt-0 sm:flex-row sm:items-center">
             <div className="rounded-3xl bg-slate-900/70 px-5 py-4 text-left shadow-lg shadow-slate-950/10 sm:px-6">
               <p className="text-sm text-slate-400">Tareas pendientes</p>
@@ -23,6 +56,7 @@ export default function App() {
           </div>
         </header>
 
+        {/* Resumen de las tareas activas (Por hacer) */}
         <main className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="space-y-6 rounded-3xl bg-white p-6 shadow-lg shadow-slate-900/5">
             <div className="space-y-3">
@@ -34,12 +68,18 @@ export default function App() {
               </div>
             </div>
 
+            {/* Recordatorio de las entregas */}
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
               <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Próximas entregas</p>
               <div className="mt-4 space-y-4">
                 <div className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200/50">
-                  <p className="text-sm font-medium text-slate-900">Diseño UI</p>
-                  <p className="mt-1 text-xs text-slate-500">Entregar antes del viernes</p>
+                  {todos.map((todo) => (
+                    <div key={todo.id} className="mt-2 text-xs text-slate-400">
+                    <p className="text-sm font-medium text-slate-900">{todo.title}</p>
+                    <p className="mt-1 text-xs text-slate-500">Entregar antes del viernes</p>
+                    </div>
+                  ))
+                  }
                 </div>
                 <div className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200/50">
                   <p className="text-sm font-medium text-slate-900">Revisar backlog</p>
@@ -49,6 +89,7 @@ export default function App() {
             </div>
           </aside>
 
+          {/* Tablero de tareas */}
           <section className="space-y-6">
             <div className="flex flex-col gap-4 rounded-3xl bg-white p-6 shadow-lg shadow-slate-900/5 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -60,6 +101,7 @@ export default function App() {
               </button>
             </div>
 
+            {/* Tareas para asignar al equipo */}
             <div className="grid gap-6 xl:grid-cols-3">
               <article className="space-y-4 rounded-3xl bg-slate-900/95 p-5 text-white shadow-xl shadow-slate-900/10">
                 <div className="flex items-center justify-between">
@@ -70,21 +112,28 @@ export default function App() {
                   <span className="rounded-full bg-slate-700 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Nuevo</span>
                 </div>
 
-                <div className="space-y-4">
-                  <article className="rounded-3xl bg-slate-950/80 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-lg font-semibold">Definir alcance</h3>
-                      <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300">Planeación</span>
+                {/* Card de tarea por asignar */}
+                {todos.map((todo) => (
+                    <div className="space-y-4">
+                      <article className="rounded-3xl bg-slate-950/80 p-4">
+                        <div key={todo.id} className="flex items-center justify-between gap-4">
+                          <h3 className="text-lg font-semibold">{todo.title}</h3>
+                          <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300">{todo.category}</span>
+                        </div>
+                        <p className="mt-3 text-sm text-slate-400">{todo.description}</p>
+                        <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                          <img src="" alt="" /> {/* Imagen de Usuario */}
+                          {/* <span>{todo.deadline}</span> */} {/* Tiempo limite de entrega */}
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${todo.priority === 'alta' ? 'bg-rose-100 text-rose-700' :  todo.priority === 'media' ? 'bg-amber-100 text-amber-700' : todo.priority === 'baja' ? 'bg-emerald-100 text-emerald-700' : ''}`}>
+                            {todo.priority === 'alta' ? 'Alta Prioridad' : todo.priority === 'media' ? 'Media prioridad' : 'Baja Prioridad'}
+                          </span>
+                        </div>
+                      </article>
                     </div>
-                    <p className="mt-3 text-sm text-slate-400">Revisar requisitos y preparar la primera versión del backlog.</p>
-                    <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                      <span>2 días</span>
-                      <span>Alta prioridad</span>
-                    </div>
-                  </article>
-                </div>
+                ))}
               </article>
 
+              {/* Tareas en progreso */}
               <article className="space-y-4 rounded-3xl bg-white p-5 shadow-lg shadow-slate-900/5">
                 <div className="flex items-center justify-between">
                   <div>
@@ -94,6 +143,7 @@ export default function App() {
                   <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">Activo</span>
                 </div>
 
+                {/* Card de tareas en progreso */}
                 <div className="space-y-4">
                   <article className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                     <div className="flex items-center justify-between gap-4">
@@ -120,6 +170,7 @@ export default function App() {
                 </div>
               </article>
 
+              {/* Tareas completadas */}
               <article className="space-y-4 rounded-3xl bg-white p-5 shadow-lg shadow-slate-900/5">
                 <div className="flex items-center justify-between">
                   <div>
