@@ -17,7 +17,7 @@ export default function App() {
   async function getTodos() {
     const { data, error } = await supabase
       .from('todos')
-      .select('*, categories (id, name, color )') // Selecciona todos los campos de la tabla 'todos' y el campo 'name' de la tabla relacionada 'category_id';
+      .select('*, categories (id, name, color), users (id, name)') // Selecciona todos los campos de la tabla 'todos' y el campo 'name' de la tabla relacionada 'category_id';
       console.log('Todos:', data, error);
       if (error) {
         console.error('Error fetching todos:', error);
@@ -27,6 +27,9 @@ export default function App() {
     
     return { data, error };
   }
+
+
+  // LEER (los todos por estado)
   
 
   return (
@@ -142,30 +145,36 @@ export default function App() {
                 </div>
 
                 {/* Card de tareas en progreso */}
-                <div className="space-y-4">
-                  <article className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-lg font-semibold text-slate-900">Implementar auth</h3>
-                      <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">60%</span>
-                    </div>
-                    <p className="mt-3 text-sm text-slate-600">Integrar login y registro con validaciones de usuario.</p>
-                    <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                      <span>Asignado a Luis</span>
-                      <span>Hoy</span>
-                    </div>
-                  </article>
-                  <article className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-lg font-semibold text-slate-900">Diseño responsive</h3>
-                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">40%</span>
-                    </div>
-                    <p className="mt-3 text-sm text-slate-600">Ajustar la UI para móviles y tabletas con componentes reutilizables.</p>
-                    <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                      <span>Asignado a Ana</span>
-                      <span>Mañana</span>
-                    </div>
-                  </article>
-                </div>
+                {todos.filter(todo => todo.status === 'en progreso' || todo.status === 'activo').map((todo) => ( // Filtra los todos que están en progreso o activos y los mapea para mostrarlos
+                  <div key={todo.id} className="space-y-4">
+                    <article className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <h3 className="text-lg font-semibold text-slate-900">{todo.title}</h3>
+                        <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">60%</span>
+                      </div>
+                      <p className="mt-3 text-sm text-slate-600">{todo.description}</p>
+                      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                        <span>{new Date(todo.deadline).toLocaleDateString()}</span>
+                        <div className="flex items-center gap-1">
+                          <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke-width="1.5" 
+                          stroke="currentColor" 
+                          class="w-6 h-6 text-gray-700 hover:text-blue-600 transition-colors">
+                          <path 
+                            stroke-linecap="round" 
+                            stroke-linejoin="round" 
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                          </svg>
+                          {todo.users?.name}
+                        </div>
+                        
+                      </div>
+                    </article>
+                  </div>
+                ))}
               </article>
 
               {/* Tareas completadas */}
