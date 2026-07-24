@@ -181,24 +181,51 @@ export default function App() {
               <article className="space-y-4 rounded-3xl bg-white p-5 shadow-lg shadow-slate-900/5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Completadas</p>
-                    <p className="mt-2 text-3xl font-semibold text-slate-900">3</p>
+                    <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
+                      Completadas
+                    </p>
+
+                    <p className="mt-2 text-3xl font-semibold text-slate-900">
+                      {todos.filter(todo => todo.status === 'completada').length}
+                    </p>
                   </div>
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">Hecho</span>
+
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                    Hecho
+                  </span>
                 </div>
 
                 <div className="space-y-4">
-                  <article className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-lg font-semibold text-slate-900">Revisar tickets</h3>
-                      <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">100%</span>
-                    </div>
-                    <p className="mt-3 text-sm text-slate-600">Actualizar estados y cerrar incidencias urgentes.</p>
-                    <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                      <span>Completo</span>
-                      <span>Hoy</span>
-                    </div>
-                  </article>
+                  {todos.filter(todo => todo.status === 'completada').map((todo) => (
+                    <article
+                      key={todo.id}
+                      className="rounded-3xl border border-slate-200 bg-slate-50 p-4"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          {todo.title}
+                        </h3>
+
+                        <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
+                          100%
+                        </span>
+                      </div>
+
+                      <p className="mt-3 text-sm text-slate-600">
+                        {todo.description}
+                      </p>
+
+                      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                        <span>{todo.categories?.name}</span>
+
+                        <span>
+                          {todo.deadline
+                            ? new Date(todo.deadline).toLocaleDateString('es-ES')
+                            : 'Sin fecha'}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
                 </div>
               </article>
             </div>
