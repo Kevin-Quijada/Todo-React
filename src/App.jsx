@@ -1,6 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import Status from './components/Status.jsx';
+import { DndContext } from '@dnd-kit/core';
+import Column from './components/Column.jsx';
+import TodoCard from './components/TodoCard.jsx';
 
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY); // Inicializa el cliente de Supabase con las variables de entorno
 
@@ -28,14 +30,52 @@ export default function App() {
     return { data, error };
   }
 
+  // Cambiar el estado de una tarea
+  async function moverTodo(todoId, nuevoEstado) {
+    const { error } = await supabase
+      .from('todos')
+      .update({
+        status: nuevoEstado // Actualiza el campo 'status' de la tarea con el nuevo estado
+      })
+      .eq('id', todoId) // Filtra la tarea por su ID para actualizar solo esa tarea
 
-  // LEER (los todos por estado)
-  
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    getTodos()
+  }
+
+  function handleDragEnd(event) { // Función que se ejecuta cuando se termina de arrastrar un elemento
+    const { active, over } = event; // Obtiene el elemento activo (el que se está arrastrando) y el elemento sobre el que se soltó
+
+    if (!over) return; //si no hay un elemento sobre el que se soltó, no hace nada es decir, si el usuario suelta la tarea fuera de una columna, no se hace nada
+
+    const todoId = Number(active.id);
+    const nuevoEstado = String(over.id);
+
+    if (!Number.isNaN(todoId) && nuevoEstado) { //si el ID de la tarea es un número válido y hay un nuevo estado, llama a la función moverTodo para actualizar el estado de la tarea
+      moverTodo(todoId, nuevoEstado);
+    }
+  }
+
+  const porAsignarTodos = todos.filter( // filtra las tareas que están en estado "por asignar", "nuevo" o "pendiente"
+    (todo) => !todo.status || todo.status === 'por asignar' || todo.status === 'nuevo' || todo.status === 'pendiente'
+  );
+  const enProgresoTodos = todos.filter(
+    (todo) => todo.status === 'en progreso' || todo.status === 'activo'
+  );
+  const completadasTodos = todos.filter(
+    (todo) => todo.status === 'completada' || todo.status === 'terminada' || todo.status === 'done'
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
         <header className="mb-8 rounded-3xl bg-slate-950 px-6 py-6 text-white shadow-2xl shadow-slate-900/10 sm:flex sm:items-center sm:justify-between">
+
+          {/*   */}
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-slate-400">Tablero Todo</p>
             <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">Controla tus tareas y flujo de trabajo</h1>
@@ -102,133 +142,81 @@ export default function App() {
               </button>
             </div>
 
-            {/* Tareas para asignar al equipo */}
-            <div className="grid gap-6 xl:grid-cols-3">
-              <article className="space-y-4 rounded-3xl bg-slate-900/95 p-5 text-white shadow-xl shadow-slate-900/10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-slate-400">Por asignar</p>
-                    <p className="mt-2 text-3xl font-semibold">5</p>
-                  </div>
-                  <span className="rounded-full bg-slate-700 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Nuevo</span>
-                </div>
 
-                {/* Card de tarea por asignar */}
-                {todos.map((todo) => (
-                    <div className="space-y-4">
-                      <article className="rounded-3xl bg-slate-950/80 p-4">
-                        <div key={todo.id} className="flex items-center justify-between gap-4">
-                          <h3 className="text-lg font-semibold">{todo.title}</h3>
-                          <span className={`rounded-full ${todo.categories?.color === 'negro' ? 'bg-slate-500' : todo.categories?.color === 'azul' ? 'bg-blue-500' : 'bg-amber-500/15' } px-3 py-1 text-xs font-semibold text-white`}>{todo.categories?.name}</span>
-                        </div>
-                        <p className="mt-3 text-sm text-slate-400">{todo.description}</p>
-                        <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                          <img src="" alt="" /> {/* Imagen de Usuario */}
-                          {/* <span>{todo.deadline}</span> */} {/* Tiempo limite de entrega */}
-                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${todo.priority === 'alta' ? 'bg-rose-100 text-rose-700' :  todo.priority === 'media' ? 'bg-amber-100 text-amber-700' : todo.priority === 'baja' ? 'bg-emerald-100 text-emerald-700' : ''}`}>
-                            {todo.priority === 'alta' ? 'Alta Prioridad' : todo.priority === 'media' ? 'Media prioridad' : 'Baja Prioridad'}
-                          </span>
-                        </div>
-                      </article>
+            {/* Todas las columnas */}
+            <DndContext onDragEnd={handleDragEnd}> {/* dndContext es el contenedor para el manejo del arrastre y colocación importado a travez de @dnd-kit/core libreria especial para esto*/}
+            
+              <div className="grid gap-6 xl:grid-cols-3">
+                <Column
+                  id="por asignar"
+                  title="Por asignar"
+                  count={porAsignarTodos.length}
+                  badgeText="Nuevo"
+                  badgeClass="bg-slate-700 text-slate-300"
+                  className="bg-slate-900/95 p-5 text-white shadow-xl shadow-slate-900/10"
+                  titleClass="text-slate-400"
+                  countClass="text-white"
+                >
+                  {porAsignarTodos.map((todo) => (
+                    <div key={todo.id} className="space-y-4">
+                      <TodoCard
+                        todo={todo}
+                        onMove={moverTodo}
+                        actionLabel="Mover a progreso"
+                        actionTarget="en progreso"
+                        className="bg-slate-950/80 text-white"
+                      />
                     </div>
-                ))}
-              </article>
-
-              {/* Tareas en progreso */}
-              <article className="space-y-4 rounded-3xl bg-white p-5 shadow-lg shadow-slate-900/5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-slate-500">En progreso</p>
-                    <p className="mt-2 text-3xl font-semibold text-slate-900">6</p>
-                  </div>
-                  <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">Activo</span>
-                </div>
-
-                {/* Card de tareas en progreso */}
-                {todos.filter(todo => todo.status === 'en progreso' || todo.status === 'activo').map((todo) => ( // Filtra los todos que están en progreso o activos y los mapea para mostrarlos
-                  <div key={todo.id} className="space-y-4">
-                    <article className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                      <div className="flex items-center justify-between gap-4">
-                        <h3 className="text-lg font-semibold text-slate-900">{todo.title}</h3>
-                        <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">60%</span>
-                      </div>
-                      <p className="mt-3 text-sm text-slate-600">{todo.description}</p>
-                      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                        <span>{new Date(todo.deadline).toLocaleDateString()}</span>
-                        <div className="flex items-center gap-1">
-                          <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          stroke-width="1.5" 
-                          stroke="currentColor" 
-                          class="w-6 h-6 text-gray-700 hover:text-blue-600 transition-colors">
-                          <path 
-                            stroke-linecap="round" 
-                            stroke-linejoin="round" 
-                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                          </svg>
-                          {todo.users?.name}
-                        </div>
-                        
-                      </div>
-                    </article>
-                  </div>
-                ))}
-              </article>
-
-              {/* Tareas completadas */}
-              <article className="space-y-4 rounded-3xl bg-white p-5 shadow-lg shadow-slate-900/5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.24em] text-slate-500">
-                      Completadas
-                    </p>
-
-                    <p className="mt-2 text-3xl font-semibold text-slate-900">
-                      {todos.filter(todo => todo.status === 'completada').length}
-                    </p>
-                  </div>
-
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">
-                    Hecho
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  {todos.filter(todo => todo.status === 'completada').map((todo) => (
-                    <article
-                      key={todo.id}
-                      className="rounded-3xl border border-slate-200 bg-slate-50 p-4"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <h3 className="text-lg font-semibold text-slate-900">
-                          {todo.title}
-                        </h3>
-
-                        <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
-                          100%
-                        </span>
-                      </div>
-
-                      <p className="mt-3 text-sm text-slate-600">
-                        {todo.description}
-                      </p>
-
-                      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                        <span>{todo.categories?.name}</span>
-
-                        <span>
-                          {todo.deadline
-                            ? new Date(todo.deadline).toLocaleDateString('es-ES')
-                            : 'Sin fecha'}
-                        </span>
-                      </div>
-                    </article>
                   ))}
-                </div>
-              </article>
-            </div>
+                </Column>
+
+                <Column
+                  id="en progreso"
+                  title="En progreso"
+                  count={enProgresoTodos.length} // enProgresoTodos.length sive para mostrar el número de tareas en progreso
+                  badgeText="Activo"
+                  badgeClass="bg-sky-100 text-sky-700"
+                  className="bg-white p-5 shadow-lg shadow-slate-900/5"
+                  titleClass="text-slate-500"
+                  countClass="text-slate-900"
+                >
+                  {enProgresoTodos.map((todo) => (
+                    <div key={todo.id} className="space-y-4">
+                      <TodoCard
+                        todo={todo}   // Pasa la tarea actual al componente TodoCard
+                        onMove={moverTodo} // Función para mover la tarea a otra columna
+                        actionLabel="Completar"
+                        actionTarget="completada"
+                        className="border border-slate-200 bg-slate-50 text-slate-900"
+                      />
+                    </div>
+                  ))}
+                </Column>
+
+                <Column
+                  id="completada"
+                  title="Completadas"
+                  count={completadasTodos.length} // completadasTodos.length sive para mostrar el número de tareas completadas
+                  badgeText="Hecho"
+                  badgeClass="bg-emerald-100 text-emerald-700"
+                  className="bg-white p-5 shadow-lg shadow-slate-900/5"
+                  titleClass="text-slate-500"
+                  countClass="text-slate-900"
+                >
+                  {completadasTodos.map((todo) => (
+                    <div key={todo.id} className="space-y-4">
+                      <TodoCard
+                        todo={todo} // Pasa la tarea actual al componente TodoCard
+                        onMove={moverTodo}  // Función para mover la tarea a otra columna
+                        actionLabel="Volver a pendiente"
+                        actionTarget="por asignar"
+                        className="border border-slate-200 bg-slate-50 text-slate-900"
+                      />
+                    </div>
+                  ))}
+                </Column>
+              </div>
+            </DndContext>
           </section>
         </main>
       </div>
