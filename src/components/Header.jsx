@@ -1,7 +1,7 @@
 import React from 'react'
 import Navbar from './Navbar'
 
-const Header = ({ session, onSignOut, setAuthMode }) => {
+const Header = ({ session, onSignOut, setAuthMode }) => { // session, onSignOut y setAuthMode son props que se pasan al componente Header
   return (
     <>
       <header className="bg-slate-900 text-white shadow-md">

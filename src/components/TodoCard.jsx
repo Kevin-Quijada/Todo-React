@@ -20,9 +20,9 @@ export default function TodoCard({
 
   const style = transform // si el elemento se está arrastrando, aplica una transformación para moverlo a la posición del cursor y cambia su opacidad a 0.7, de lo contrario, no aplica ningún estilo
     ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        opacity: isDragging ? 0.7 : 1,
-      }
+      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      opacity: isDragging ? 0.7 : 1,
+    }
     : undefined;
 
   const priorityKey = todo?.priority?.toLowerCase(); // Obtiene la prioridad de la tarea en minúsculas, si no existe, será undefined
@@ -39,39 +39,98 @@ export default function TodoCard({
 
   return (
     <article
-      ref={setNodeRef} // setNodeRef es una función que se usa para referenciar el card de la tarea y permitir que sea arrastrable
-      style={style} // Aplica los estilos de transformación y opacidad al card de la tarea
-      {...listeners} // listeners es un objeto que contiene los eventos necesarios para manejar el arrastre del card de la tarea
-      {...attributes} // attributes es un objeto que contiene los atributos necesarios para manejar el arrastre del card de la tarea. los atributos incluyen el id del card de la tarea y el rol de "button" para que sea accesible
-      className={`rounded-3xl p-4 cursor-grab ${className}`}
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`group cursor-grab rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-md transition-all duration-100 hover:-translate-y-1 hover:border-slate-500 hover:shadow-xl active:cursor-grabbing ${className}`}
     >
-      <div className="flex col flex-col gap-2">
-        <div>
-          <h3 className="text-lg font-semibold">{todo?.title ?? 'Sin título'}</h3>
-          <p className="mt-3 text-sm text-slate-400">
-            {todo?.description ?? 'Sin descripción'}
-          </p>
+      
+      <div className="space-y-4 mt-2 border-x border-y border-slate-700  text-sm text-slate-400">
+
+        {/* Categoría */}
+        <div className="flex items-center justify-between border-y boder-x border-slate-700 py-3 px-3 text-sm text-slate-400">
+
+          {todo?.categories && (
+            <span
+              className="rounded-full px-1 py-1 text-xs font-semibold text-white"
+              style={{
+                backgroundColor:
+                  todo.categories.color || "#475569",
+              }}
+            >
+              {todo.categories.name}
+            </span>
+          )}
+
+          <span
+            className={`rounded-full px-3 text-xs font-semibold ${priorityClass}`}
+          >
+            {priorityLabel}
+          </span>
+
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-            <div>
-                {todo?.categories?.name ? (
-                <span className="rounded-full bg-slate-700 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
-                    {todo.categories.name}
-                </span>
-                ) : null} 
-            </div>
-            
-            <div className="flex items-center gap-2">
-                <span className={`rounded-full ${priorityClass} px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-300`}> {/* El priorityClass es una clase para mostrar el estilo del boton dependiendo de su prioridad */}
-                {priorityLabel} {/* priorityLabel es la etiqueta de prioridad en español. En este caso solo hay 3 niveles: Alta, Media, Baja y se mostrara el color correspondiente gracias a la clase priorityClass */}
-                </span>
-            </div>
+        {/* Título */}
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-white leading-tight">
+            {todo?.title
+              ?.toLowerCase()
+              .replace(/\b\w/g, letra => letra.toUpperCase()) ??
+              "Sin título"}
+          </h3>
         </div>
-        
+
+        {/* Descripción */}
+        <p className="line-clamp-3 bg-slate-800 p-3 text-sm leading-relaxed text-slate-300">
+          {todo?.description || "Sin descripción"}
+        </p>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-b border-slate-700 pt-3 pb-3 p-3 text-xs text-slate-400">
+
+          <div className="flex items-center gap-2">
+
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 font-bold text-white">
+              {todo?.assigned_user?.name?.charAt(0).toUpperCase() || "?"}
+            </div>
+
+            <div>
+              <p className="font-medium text-slate-200">
+                {todo?.assigned_user?.name || "Sin asignar"}
+              </p>
+
+              <p>
+                {todo?.deadline
+                  ? new Date(todo.deadline).toLocaleDateString("es-MX")
+                  : "Sin fecha"}
+              </p>
+            </div>
+
+          </div>
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-slate-500 group-hover:text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 9h8M8 15h8"
+            />
+          </svg>
+
+        </div>
+
       </div>
 
-      
+      <div className="flex justify-center mt-4">
+        <div className="h-1.5 w-12 rounded-full bg-slate-600 group-hover:bg-slate-400 transition-colors"></div>
+      </div>
     </article>
   );
 }

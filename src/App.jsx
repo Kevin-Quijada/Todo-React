@@ -6,32 +6,47 @@ import TodoCard from './components/TodoCard.jsx';
 import Header from './components/Header.jsx';
 import UserAuthSection from './components/UserAuthSection.jsx';
 import Modal from './components/Modal.jsx';
+import { getTodos, getUsers, createTodo } from './services/TodoServices.js';
+import { getCategories } from './services/TodoCategories.js';
 
 export default function App() {
   const [todos, setTodos] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [users, setUsers] = useState([]);
   const [session, setSession] = useState(null);
   const [authMode, setAuthMode] = useState('login');
   const [message, setMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  
+  const [categories, setCategories] = useState([]);
 
-  /* Seccion de usuario */
- 
-  async function getUsers() { // Función para obtener la lista de usuarios
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, name, email") // Selecciona los campos id, name y email de la tabla profiles la cual solo contiene los usuarios registrados no es nesesario llamar a la tabla users ya que esta contiene informacion de autenticacion y no es necesario mostrarla
-    .order("name");
 
-  if (error) {
-    console.error("Error obteniendo usuarios:", error);
-    return;
+  /* Cargar de los Todos */
+  async function loadTodos() {
+    try {
+      const data = await getTodos();
+      setTodos(data);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  setUsers(data);
-}
+  /* Cargar de los Usuarios */
+  async function loadUsers() {
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  /* Cargar categorias */
+  async function loadCategories() {
+    const { data, error } = await getCategories();
+
+    if (!error) {
+      setCategories(data);
+    }
+  }
 
   useEffect(() => {
     const initAuth = async () => {
@@ -52,73 +67,12 @@ export default function App() {
 
   useEffect(() => {
     if (session) {
-      getTodos();
-      getCategories();
-      getUsers(); // Llamada a la función para obtener la lista de usuarios
-    } else {
-      setTodos([]);
-      setCategories([]);
+      loadTodos();
+      loadUsers(); // Llamada a la función para obtener la lista de usuarios
+      loadCategories();
     }
   }, [session]);
 
-
-  /* Funciones para manejar las tareas */
-  async function getTodos() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    // Obtener el perfil
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    let query = supabase
-      .from("todos")
-      .select(`
-        *,
-        categories(id, name, color),
-        assigned_user:profiles!todos_user_id_fkey(id, name),
-        creator:profiles!todos_created_by_fkey(id, name)
-      `);
-
-    // Solo filtrar si NO es administrador
-    if (profile.role !== "admin") {
-      query = query.eq("user_id", user.id);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    console.log("Usuario:", user.id);
-    console.log("Datos:", data);
-    console.log("Error:", error);
-
-    setTodos(data);
-  }
-
-  async function getCategories() {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('id, name, color')
-      .order('name');
-
-    if (error) {
-      console.error('Error fetching categories:', error);
-      return;
-    }
-
-    setCategories(data || []);
-    return { data, error };
-  }
 
   /* Función para mover una tarea a un nuevo estado */
   async function moverTodo(todoId, nuevoEstado) {
@@ -130,39 +84,19 @@ export default function App() {
       .eq('id', todoId);
 
     if (error) {
-      console.error(error);
+      console.error("Error al mover la tarea:", error);
       return;
     }
 
-    getTodos();
+    await loadTodos(); // Recargar la lista de tareas después de mover una tarea
   }
 
-  /* Funcion para crear una nueva tarea */
-  async function createTodo(todo) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    const { error } = await supabase
-      .from("todos")
-      .insert({
-        ...todo,
-        created_by: user.id,
-      });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    getTodos();
-  }
 
   /* Función para cerrar sesión */
   async function handleSignOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      setMessage(error.message); 
+      setMessage(error.message);
       return;
     }
     setSession(null);
@@ -179,6 +113,7 @@ export default function App() {
     }
   }
 
+
   const porAsignarTodos = todos.filter(
     todo => todo.status === 'por_asignar'
   );
@@ -190,7 +125,30 @@ export default function App() {
   const completadasTodos = todos.filter(
     todo => todo.status === 'completada'
   );
-  
+
+  async function handleCreateTodo(todo) {
+    try {
+      console.time("crear tarea");
+
+      const newTodo = await createTodo(todo);
+
+      console.timeEnd("crear tarea");
+
+      if (!newTodo) return false;
+
+      setTodos((prevTodos) => [ /* prevTodos representa el estado mas reciente de los todos asi es mas comodo que pedir los datos de supabase, es mas rapido y mas eficiente asi los procesos tardan menos es mostrarse */
+        ...prevTodos, /* Los (...) se llaman spread operator y sirven para copiar los elementos del array. */
+        newTodo,
+      ]);
+
+      return true;
+
+    } catch (error) {
+      console.error("Error creando tarea:", error);
+      return false;
+    }
+  }
+
 
   return (
     <>
@@ -253,7 +211,7 @@ export default function App() {
                       onClick={() => setIsOpen(true)}
                       className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                     >
-                      + Nueva tarea 
+                      + Nueva tarea
                     </button>
                   </div>
 
@@ -261,7 +219,7 @@ export default function App() {
                   <Modal
                     open={isOpen}
                     onClose={() => setIsOpen(false)}
-                    onSave={createTodo}
+                    onSave={handleCreateTodo}
                     categories={categories}
                     users={users}
                   />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const Modal = ({ open, onClose, onSave, users, categories = [] }) => {
+const Modal = ({ open, onClose, onSave, users, categories  }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('baja');
@@ -20,7 +20,7 @@ const Modal = ({ open, onClose, onSave, users, categories = [] }) => {
 
   if (!open) return null;
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => { // aqui se agrega la logica para guardar la tarea, se llama a la funcion onSave que se pasa como prop desde el componente padre y se le pasa un objeto con los datos de la tarea, si la tarea se guarda correctamente se cierra el modal
     e.preventDefault();
 
     const trimmedTitle = title.trim();
