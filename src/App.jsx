@@ -3,10 +3,11 @@ import { DndContext } from '@dnd-kit/core';
 import { supabase } from './supabaseClient.js';
 import Column from './components/Column.jsx';
 import TodoCard from './components/TodoCard.jsx';
+import EditModal from './components/EditModal.jsx';
 import Header from './components/Header.jsx';
 import UserAuthSection from './components/UserAuthSection.jsx';
 import Modal from './components/Modal.jsx';
-import { getTodos, getUsers, createTodo } from './services/TodoServices.js';
+import { getTodos, getUsers, createTodo, updateTodo } from './services/TodoServices.js';
 import { getCategories } from './services/TodoCategories.js';
 
 export default function App() {
@@ -17,6 +18,13 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [editingTodo, setEditingTodo] = useState(null);
+
+  function openEditModal(todo) {
+    // cerrar modal de crear si está abierto
+    setIsOpen(false);
+    setEditingTodo(todo);
+  }
 
 
   /* Cargar de los Todos */
@@ -149,6 +157,17 @@ export default function App() {
     }
   }
 
+  async function handleUpdateTodo(id, updatedFields) {
+    try {
+      const updatedTodo = await updateTodo(id, updatedFields);
+      setTodos((prevTodos) => prevTodos.map((todo) => (todo.id === id ? updatedTodo : todo)));
+      return true;
+    } catch (error) {
+      console.error("Error actualizando tarea:", error);
+      return false;
+    }
+  }
+
 
   return (
     <>
@@ -224,6 +243,16 @@ export default function App() {
                     users={users}
                   />
 
+                  {/* Modal único para editar tareas */}
+                  <EditModal
+                    open={Boolean(editingTodo)}
+                    onClose={() => setEditingTodo(null)}
+                    todo={editingTodo}
+                    onSave={handleUpdateTodo}
+                    categories={categories}
+                    users={users}
+                  />
+
                   <DndContext onDragEnd={handleDragEnd}>
                     <div className="grid gap-6 xl:grid-cols-3">
                       <Column
@@ -241,6 +270,10 @@ export default function App() {
                             <TodoCard
                               todo={todo}
                               onMove={moverTodo}
+                              onUpdate={handleUpdateTodo}
+                              onOpenEdit={openEditModal}
+                              categories={categories}
+                              users={users}
                               actionLabel="Mover a progreso"
                               actionTarget="en_progreso"
                               className="bg-slate-950/80 text-white"
@@ -264,6 +297,10 @@ export default function App() {
                             <TodoCard
                               todo={todo}
                               onMove={moverTodo}
+                              onUpdate={handleUpdateTodo}
+                              onOpenEdit={openEditModal}
+                              categories={categories}
+                              users={users}
                               actionLabel="Completar"
                               actionTarget="completada"
                               className="border border-slate-200 bg-slate-50 text-slate-900"
@@ -287,6 +324,10 @@ export default function App() {
                             <TodoCard
                               todo={todo}
                               onMove={moverTodo}
+                               onUpdate={handleUpdateTodo}
+                               onOpenEdit={openEditModal}
+                               categories={categories}
+                               users={users}
                               actionLabel="Volver a pendiente"
                               actionTarget="por_asignar"
                               className="border border-slate-200 bg-slate-50 text-slate-900"

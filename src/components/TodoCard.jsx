@@ -1,4 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
+// no local state required here; modal control moved to App
 
 const priorityStyles = {
   alta: 'bg-red-400 text-white',
@@ -10,6 +11,10 @@ const priorityStyles = {
 export default function TodoCard({
   todo,
   onMove,
+  onUpdate,
+  onOpenEdit,
+  categories = [],
+  users = [],
   actionLabel,
   actionTarget,
   className = 'bg-slate-950/80 text-white',
@@ -37,13 +42,13 @@ export default function TodoCard({
           : 'Sin prioridad';
 
 
+  // El control del modal de edición se maneja en App (un solo modal global)
+
   return (
     <article
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
-      className={`group cursor-grab rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-md transition-all duration-100 hover:-translate-y-1 hover:border-slate-500 hover:shadow-xl active:cursor-grabbing ${className}`}
+      className={`group rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-md transition-all duration-100 hover:-translate-y-1 hover:border-slate-500 hover:shadow-xl ${className}`}
     >
       
       <div className="space-y-4 mt-2 border-x border-y border-slate-700  text-sm text-slate-400">
@@ -109,27 +114,23 @@ export default function TodoCard({
 
           </div>
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-slate-500 group-hover:text-white"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 9h8M8 15h8"
-            />
-          </svg>
+          <button type="button" onClick={(e) => { e.stopPropagation(); if (typeof onOpenEdit === 'function') onOpenEdit(todo); }} className="rounded-full p-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5 text-slate-400 hover:text-slate-200">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+            </svg>
+          </button>
+          {/* Edit modal se renderiza en App (modal único) */}
 
         </div>
 
       </div>
 
       <div className="flex justify-center mt-4">
-        <div className="h-1.5 w-12 rounded-full bg-slate-600 group-hover:bg-slate-400 transition-colors"></div>
+        <div
+          {...listeners} /* el ... sirve para pasar todas las propiedades del objeto listeners es como una abreviatura para no colocar cada propiedad individualmente */
+          {...attributes}
+          className="h-1.5 w-12 rounded-full bg-slate-600 group-hover:bg-slate-400 transition-colors cursor-grab active:cursor-grabbing"
+        />
       </div>
     </article>
   );

@@ -81,4 +81,24 @@ export async function createTodo(todo) {
   return data;
 }
 
-/* Eliminar una tarea */
+/* Editar una tarea */
+
+export async function updateTodo(id, todo) {
+  const { data, error } = await supabase
+    .from("todos")
+    .update(todo)
+    .eq("id", id)
+    .select(`
+      *,
+      categories(id, name, color),
+      assigned_user:profiles!todos_user_id_fkey(id, name)
+    `)
+    .single();
+
+  if (error) {
+    console.error("Error al actualizar la tarea:", error);
+    return null;
+  }
+
+  return data;
+}
