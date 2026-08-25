@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { supabase } from '../supabaseClient.js';
+import {
+  signInWithPassword,
+  signUpWithPassword,
+} from '../services/AuthServices.js';
 
 export default function UserAuthSection({ authMode, setAuthMode }) {
   const [name, setName] = useState('');
@@ -16,62 +19,32 @@ export default function UserAuthSection({ authMode, setAuthMode }) {
       return;
     }
 
-    if (authMode === 'register') {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          },
-        },
-      });
+    try {
+      if (authMode === 'register') {
+        await signUpWithPassword({
+          name,
+          email,
+          password,
+        });
 
-      if (error) {
-        setMessage(error.message);
+        setMessage('Registro enviado. Revisa tu email o inicia sesión.');
+        setAuthMode('login');
+        setName('');
+        setPassword('');
         return;
       }
 
-      const user = data.user;
-      if (user?.id) {
-        const profile = {
-          id: user.id,
-          name,
-          email,
-        };
+      await signInWithPassword({
+        email,
+        password,
+      });
 
-        await supabase
-          .from("profiles")
-          .upsert(profile, {
-            onConflict: "id",
-          });
-
-
-        if (profileError) {
-          console.error('Error saving user profile:', profileError);
-        }
-      }
-
-      setMessage('Registro enviado. Revisa tu email o inicia sesión.');
-      setAuthMode('login');
-      setName('');
+      setMessage('Has iniciado sesión correctamente.');
+      setEmail('');
       setPassword('');
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
+    } catch (error) {
       setMessage(error.message);
-      return;
     }
-
-    setMessage('Has iniciado sesión correctamente.');
-    setEmail('');
-    setPassword('');
   }
 
   return (

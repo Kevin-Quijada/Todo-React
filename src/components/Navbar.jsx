@@ -1,20 +1,19 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Navbar = () => {
   return (
     <>
       <nav className="hidden md:flex items-center gap-8">
-        <a href="#inicio" className="hover:text-emerald-400 transition">
+        <Link to="/" className="hover:text-emerald-400 transition">
           Inicio
-        </a>
-
-        <a href="#tareas" className="hover:text-emerald-400 transition">
-          Mis tareas
-        </a>
-
-        <a href="#categorias" className="hover:text-emerald-400 transition">
-          Categorías
-        </a>
+        </Link>
+        <Link to="/list" className="hover:text-emerald-400 transition">
+          Listado
+        </Link>
+        <Link to="/dashboard" className="hover:text-emerald-400 transition">
+          Dashboard
+        </Link>
       </nav>
     </>
   )

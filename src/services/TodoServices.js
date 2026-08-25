@@ -70,8 +70,8 @@ export async function createTodo(todo) {
       *,
       categories(id, name, color),
       assigned_user:profiles!todos_user_id_fkey(id, name)
-    `)
-    .single();
+    `) /* assigned_user:profiles!todos_user_id_fkey(id, name) tareas asignadas al usuario en la tabla externa profiles (!) indica una relación forzada o especifica con la tabla profiles */
+    .single(); /* en resumen es una linea de codigo que solo extraera el id y el name del usuario asignado */
 
   if (error) {
     console.error("Error al crear la tarea:", error);
@@ -101,4 +101,18 @@ export async function updateTodo(id, todo) {
   }
 
   return data;
+}
+
+export async function deleteTodo(id) {
+  const { error } = await supabase
+    .from('todos')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error al eliminar la tarea:', error);
+    return false;
+  }
+
+  return true;
 }
