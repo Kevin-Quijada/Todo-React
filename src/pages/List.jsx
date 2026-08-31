@@ -34,15 +34,21 @@ function getStatusLabel(status) {
 }
 
 const List = () => {
+  /* estados de Inicio de session */
   const [session, setSession] = useState(null);
   const [authMode, setAuthMode] = useState('login');
-  const [message, setMessage] = useState('');
-  const [tasks, setTasks] = useState([]);
   const [users, setUsers] = useState([]);
+  const [message, setMessage] = useState('');
+  /* Estado de tareas */
+  const [tasks, setTasks] = useState([]);
+  /* Estado de categorías */
   const [categories, setCategories] = useState([]);
+  /* Estados de filtros */
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  /* Estados de modal */
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState(null);
+  /* Estados de filtros por búsqueda */
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');

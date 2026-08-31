@@ -17,8 +17,8 @@ const EMPTY_PRIORITY = {
 
 const Dashboard = () => {
   const [session, setSession] = useState(null);
-  const [tasks, setTasks] = useState([]);
   const [authMode, setAuthMode] = useState('login');
+  const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
     let isMounted = true;

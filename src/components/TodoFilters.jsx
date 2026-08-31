@@ -1,21 +1,22 @@
 import React from 'react';
 
 const TodoFilters = ({
-  search,
+  search, // Estos son parametros que se pasan desde el componente padre (List.jsx) y se utilizan para mostrar el valor actual de búsqueda en el input.
   setSearch,
   statusFilter,
   setStatusFilter,
   priorityFilter,
   setPriorityFilter,
+  className = '',
 }) => {
   const clearFilters = () => {
-    setSearch('');
+    setSearch(''); // Estos son parametros que se pasan desde el componente padre (List.jsx) y se utilizan para actualizar el estado de búsqueda en el componente padre.
     setStatusFilter('');
     setPriorityFilter('');
   };
 
   return (
-    <div className="rounded-[7px] border border-slate-700 bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-4 shadow-2xl shadow-slate-900/10">
+    <div className={`rounded-[7px] border border-slate-700 bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-4 shadow-2xl shadow-slate-900/10 ${className}`}>
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
         <label className="relative block flex-1">
           <span className="sr-only">Buscar tareas</span>
@@ -23,7 +24,7 @@ const TodoFilters = ({
           <input
             type="text"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => setSearch(event.target.value)} 
             placeholder="Buscar por título o descripción..."
             className="w-full rounded-[7px] border border-white/10 bg-white/10 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-slate-400 outline-none transition focus:border-indigo-400 focus:bg-white/15"
           />
@@ -61,7 +62,7 @@ const TodoFilters = ({
           <button
             type="button"
             onClick={clearFilters}
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+            className="rounded-[10px] border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
           >
             Limpiar
           </button>

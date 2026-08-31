@@ -190,6 +190,7 @@ export default function Inicio() {
 
   return (
     <>
+    {/* Header - Navegador */}
       <Header session={session} onSignOut={handleSignOut} setAuthMode={setAuthMode} />
 
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f8fafc_0%,_#eef2ff_28%,_#f8fafc_55%,_#f1f5f9_100%)] text-slate-900">
@@ -209,7 +210,7 @@ export default function Inicio() {
                       Bienvenido, {session.user?.email || 'usuario'}.
                     </p>
                   </div>
-                  {/* Resumen de Tareas */}
+                  {/* Resumen de Tareas (Total, Pendientes, Completas) */}
                   <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[420px]">
                     <div className="rounded-[7px] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-400 text-center">Total</p>

@@ -5,20 +5,26 @@ export function filterTodos(
   priorityFilter,
   categoryFilter
 ) {
-  return todos.filter((todo) => {
+  const term = (search || '').toLowerCase();
+
+  return (todos || []).filter((todo) => {
+    const title = (todo.title || '').toLowerCase();
+    const description = (todo.description || '').toLowerCase();
+    const assigned = (todo.assigned_user?.name || '').toLowerCase();
+
     const matchesSearch =
-      todo.title?.toLowerCase().includes(search.toLowerCase()) ||
-      todo.description?.toLowerCase().includes(search.toLowerCase());
+      term === '' ||
+      title.includes(term) ||
+      description.includes(term) ||
+      assigned.includes(term);
 
-    const matchesStatus =
-      !statusFilter || todo.status === statusFilter;
+    const matchesStatus = !statusFilter || todo.status === statusFilter;
 
-    const matchesPriority =
-      !priorityFilter || todo.priority === priorityFilter;
+    const matchesPriority = !priorityFilter || todo.priority === priorityFilter;
 
     const matchesCategory =
       !categoryFilter ||
-      String(todo.category_id) === String(categoryFilter); // s
+      String(todo.categories?.id || todo.category_id || '') === String(categoryFilter);
 
     return (
       matchesSearch &&

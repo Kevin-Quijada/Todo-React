@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+
 const Navbar = () => {
   return (
     <>
@@ -14,6 +15,10 @@ const Navbar = () => {
         <Link to="/dashboard" className="hover:text-emerald-400 transition">
           Dashboard
         </Link>
+
+          <Link to="/admin">
+            Administración
+          </Link>
       </nav>
     </>
   )
