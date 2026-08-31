@@ -6,6 +6,8 @@ import EditModal from '../components/EditModal.jsx';
 import { getCurrentSession, signOutUser, subscribeToAuth } from '../services/AuthServices.js';
 import { getTodos, getUsers, createTodo, updateTodo, deleteTodo } from '../services/TodoServices.js';
 import { getCategories } from '../services/TodoCategories.js';
+import { filterTodos } from '../utils/todoFilters.js';
+import TodoFilters from '../components/TodoFilters.jsx';
 
 function getStatusStyle(status) {
   switch (status) {
@@ -41,6 +43,11 @@ const List = () => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+
+  const filteredTasks = filterTodos(tasks, search, statusFilter, priorityFilter, '');
 
   useEffect(() => {
     let isMounted = true;
@@ -146,7 +153,16 @@ const List = () => {
       ) : (
         <>
           <main className="min-h-screen bg-slate-950 px-4 py-8 text-white sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-7xl space-y-6">
+              <TodoFilters
+                search={search}
+                setSearch={setSearch}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                priorityFilter={priorityFilter}
+                setPriorityFilter={setPriorityFilter}
+              />
+
               <div className="overflow-hidden rounded-2xl border border-slate-700 bg-[#111827] shadow-2xl shadow-slate-900/30">
                 <div className="grid grid-cols-[1.6fr_1fr_1fr_1fr_1fr] items-center border-b border-slate-700 bg-slate-950 px-4 py-4 text-sm font-semibold uppercase tracking-wide text-slate-300">
                   <div className="flex items-center gap-3 px-2">
@@ -164,7 +180,11 @@ const List = () => {
                 </div>
 
                 <div className="divide-y divide-slate-700">
-                  {tasks.map((task) => {
+                  {filteredTasks.length === 0 ? (
+                    <div className="px-6 py-10 text-center text-slate-400">
+                      No se encontraron tareas con ese criterio de búsqueda.
+                    </div>
+                  ) : filteredTasks.map((task) => {
                     const isSelected = selectedTaskId === task.id;
                     const assigneeName = task.assigned_user?.name || 'Sin asignar';
                     const reporterName = task.creator?.name || 'Sin asignar';
@@ -256,7 +276,7 @@ const List = () => {
                   </button>
 
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="text-slate-400">{tasks.length} de {tasks.length}</span>
+                    <span className="text-slate-400">{filteredTasks.length} de {tasks.length}</span>
                     <span className="text-slate-400">◌</span>
                   </div>
                 </div>

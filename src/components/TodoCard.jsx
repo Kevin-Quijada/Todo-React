@@ -48,7 +48,7 @@ export default function TodoCard({
     <article
       ref={setNodeRef}
       style={style}
-      className={`group rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-md transition-all duration-100 hover:-translate-y-1 hover:border-slate-500 hover:shadow-xl ${className}`}
+      className={`group rounded-[7px] border border-slate-700 bg-slate-900 p-3 shadow-md transition-all duration-100 hover:-translate-y-1 hover:border-slate-500 hover:shadow-xl ${className}`}
     >
       
       <div className="space-y-4 mt-2 border-x border-y border-slate-700  text-sm text-slate-400">

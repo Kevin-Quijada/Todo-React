@@ -129,13 +129,13 @@ const Dashboard = () => {
             </div>
           ) : (
             <>
-              <section className="rounded-3xl border border-slate-700 bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-900/40 p-6 shadow-xl shadow-slate-950/20">
+              <section className="rounded-[7px] border border-slate-700 bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-900/40 p-6 shadow-xl shadow-slate-950/20">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm uppercase tracking-[0.24em] text-emerald-300">Dashboard</p>
                     <h1 className="mt-3 text-3xl font-bold text-white">Bienvenido, {usuarioNombre}</h1>
                   </div>
-                  <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-right">
+                  <div className="rounded-[7px] border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-right">
                     <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">Total</p>
                     <p className="mt-1 text-2xl font-bold text-white">{stats.total}</p>
                   </div>
@@ -149,7 +149,7 @@ const Dashboard = () => {
                   { label: 'En progreso', value: stats.progreso, accent: 'bg-violet-500/10 text-violet-300' },
                   { label: 'Completadas', value: stats.completadas, accent: 'bg-emerald-500/10 text-emerald-300' },
                 ].map((card) => (
-                  <div key={card.label} className="rounded-2xl border border-slate-700 bg-slate-900 p-5">
+                  <div key={card.label} className="rounded-[7px] border border-slate-700 bg-slate-900 p-5">
                     <div className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${card.accent}`}>
                       {card.label}
                     </div>
@@ -159,7 +159,7 @@ const Dashboard = () => {
               </section>
 
               <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-                <div className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
+                <div className="rounded-[7px] border border-slate-700 bg-slate-900 p-6">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold text-white">Progreso del mes</h2>
                     <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-semibold text-emerald-300">
@@ -183,7 +183,7 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
+                <div className="rounded-[7px] border border-slate-700 bg-slate-900 p-6">
                   <h2 className="text-xl font-semibold text-white">Prioridades</h2>
                   <div className="mt-5 space-y-4">
                     {Object.entries({ alta: 'Alta', media: 'Media', baja: 'Baja' }).map(([key, label]) => {
@@ -209,14 +209,14 @@ const Dashboard = () => {
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
+              <section className="rounded-[7px] border border-slate-700 bg-slate-900 p-6">
                 <h2 className="text-xl font-semibold text-white">Tareas recientes</h2>
                 <div className="mt-5 space-y-3">
                   {recentTasks.length > 0 ? (
                     recentTasks.map((task, index) => (
                       <div
                         key={task.id ?? `${task.title}-${index}`}
-                        className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-4 py-3"
+                        className="flex items-center justify-between rounded-[7px] border border-slate-700 bg-slate-800 px-4 py-3"
                       >
                         <div>
                           <p className="font-medium text-white">{task.title}</p>

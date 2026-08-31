@@ -16,7 +16,7 @@ export default function Column({ // Componente que representa una columna en la 
   return (
     <article
       ref={setNodeRef}
-      className={`space-y-4 rounded-3xl p-5 shadow-lg transition ${isOver ? 'ring-2 ring-emerald-400' : ''} ${className}`}
+      className={`space-y-4 rounded-[7px] p-5 shadow-lg transition ${isOver ? 'ring-2 ring-emerald-400' : ''} ${className}`}
     >
       <div className="flex items-center justify-between">
         <div>
