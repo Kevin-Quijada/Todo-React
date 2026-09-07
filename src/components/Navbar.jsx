@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { Link } from 'react-router-dom'
 
+
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -89,12 +90,21 @@ const Navbar = () => {
 
         {/* Solo administrador */}
         {role === "admin" && (
-          <Link
-            to="/admin"
-            className="text-sm font-medium text-indigo-400 transition hover:text-indigo-300"
-          >
-            Administración
-          </Link>
+          <>
+            <Link
+              to="/admin"
+              className="text-sm font-medium text-indigo-400 transition hover:text-indigo-300"
+            >
+              Administración
+            </Link>
+            <Link
+              to="/admin/users"
+              className="text-sm font-medium text-indigo-400 transition hover:text-indigo-300"
+            >
+              Usuarios
+            </Link>
+          </>
+
         )}
       </nav>
     </>

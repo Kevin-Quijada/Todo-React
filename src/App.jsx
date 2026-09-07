@@ -4,6 +4,7 @@ import List from './pages/List.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Admin from './pages/Admin.jsx';
 import AdminGuard from "./components/AdminGuard.jsx";
+import AdminUsers from "./pages/AdminUsers.jsx";
 
 export default function App() {
   return (
@@ -15,6 +16,11 @@ export default function App() {
         <Route path="/admin" element={
           <AdminGuard>
             <Admin />
+          </AdminGuard>
+        } />
+        <Route path="/admin/users" element={
+          <AdminGuard>
+            <AdminUsers />
           </AdminGuard>
         } />
       </Routes>
