@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar.jsx";
-import { getUsers } from "../services/TodoServices.js";
+import { supabase } from "../supabaseClient.js";
+import { getUsers, updateUserRole } from "../services/TodoServices.js";
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
+    const [updatingUser, setUpdatingUser] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null); /* en estos estados vamos a  */
     const [loading, setLoading] = useState(true);
 
+    /* Cargar usuarios */
     async function loadUsers() {
         setLoading(true);
 
@@ -13,10 +17,42 @@ export default function AdminUsers() {
 
         setUsers(data || []);
         setLoading(false);
+        console.log(data);
+    }
+
+    /* Manejar cambio de rol */
+    async function handleRoleChange(userId, newRole) {
+        setUpdatingUser(userId);
+
+        const success = await updateUserRole(userId, newRole);
+
+        if (success) {
+            setUsers((currentUsers) => /* setUsers es una función que actualiza el estado de los usuarios */
+                currentUsers.map((user) => /* currentUsers.map es una función que itera (iterar es repetir el proceso hasta que se cumpla una condición) sobre el array de usuarios */
+                    user.id === userId /* en este caso la condición es que el id del usuario coincida con el userId que corresponde */
+                        ? { ...user, role: newRole } /* es una forma de crear un nuevo objeto con las mismas propiedades que el objeto original, pero con el campo role actualizado */
+                        : user /* en los demás casos, se devuelve el usuario sin cambios */
+                )
+            );
+        }
+
+        setUpdatingUser(null);
+    } /* con esta funcion de manejo de roles hacemos que solo tengamos que hacer una peticion a la base de datos para modificar el rol sin antes volver a cargar la lista de usuarios */
+
+    /* Cargar el usuario actual */
+    async function loadCurrentUser() {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+            setCurrentUserId(user.id);
+        }
     }
 
     useEffect(() => {
         loadUsers();
+        loadCurrentUser();
     }, []);
 
     return (
@@ -120,21 +156,30 @@ export default function AdminUsers() {
                                             <td className="px-6 py-4">
                                                 <span
                                                     className={`rounded-full px-3 py-1 text-xs font-medium ${user.role === "admin"
-                                                            ? "bg-indigo-500/10 text-indigo-400"
-                                                            : "bg-slate-700 text-slate-300"
+                                                        ? "bg-indigo-500/10 text-indigo-400"
+                                                        : "bg-slate-700 text-slate-300"
                                                         }`}
                                                 >
                                                     {user.role}
+                                                    {console.log(user.role)}
                                                 </span>
                                             </td>
 
                                             <td className="px-6 py-4 text-right">
-                                                <button
-                                                    disabled
-                                                    className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-500"
+                                                <select
+                                                    value={user.role}
+                                                    disabled={
+                                                        updatingUser === user.id ||
+                                                        user.id === currentUserId
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleRoleChange(user.id, e.target.value)
+                                                    }
+                                                    className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
-                                                    Editar
-                                                </button>
+                                                    <option value="user">Usuario</option>
+                                                    <option value="admin">Administrador</option>
+                                                </select>
                                             </td>
                                         </tr>
                                     ))}

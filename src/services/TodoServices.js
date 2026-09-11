@@ -42,7 +42,7 @@ export async function getTodos() {
 export async function getUsers() { // Función para obtener la lista de usuarios
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, name, email") // Selecciona los campos id, name y email de la tabla profiles la cual solo contiene los usuarios registrados no es nesesario llamar a la tabla users ya que esta contiene informacion de autenticacion y no es necesario mostrarla
+    .select("id, name, email, role") // Selecciona los campos id, name y email de la tabla profiles la cual solo contiene los usuarios registrados no es nesesario llamar a la tabla users ya que esta contiene informacion de autenticacion y no es necesario mostrarla
     .order("name");
 
   if (error) {
@@ -53,6 +53,20 @@ export async function getUsers() { // Función para obtener la lista de usuarios
   return data;
 }
 
+/* Funcion para actualizar el rol */
+export async function updateUserRole(userId, newRole) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ role: newRole }) /* el role: newRole significa que se actualiza el campo role con el nuevo valor, es mejor que se utilice el newRole para evitar confusiones */
+    .eq("id", userId);
+
+  if (error) {
+    console.error("Error actualizando rol del usuario:", error);
+    return;
+  }
+
+  return data;
+}
 
 /* Funcion para crear una nueva tarea */
 export async function createTodo(todo) {
