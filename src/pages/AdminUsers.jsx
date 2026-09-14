@@ -1,13 +1,56 @@
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar.jsx";
-import { supabase } from "../supabaseClient.js";
-import { getUsers, updateUserRole } from "../services/TodoServices.js";
+// Navbar removed (not used)
+import UserTashkModal from "../components/UserTashkModal.jsx";
+import { getUsers, updateUserRole, getTodosByUser } from "../services/TodoServices.js";
+import { getCurrentSession, signOutUser, subscribeToAuth } from '../services/AuthServices.js';
+import Header from '../components/Header.jsx';
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [updatingUser, setUpdatingUser] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null); /* en estos estados vamos a  */
     const [loading, setLoading] = useState(true);
+    const [viewOpen, setViewOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedUserTodos, setSelectedUserTodos] = useState([]);
+    const [session, setSession] = useState(null);
+    const [authMode, setAuthMode] = useState('login');
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const initAuth = async () => {
+            try {
+                const currentSession = await getCurrentSession();
+                if (isMounted) {
+                    setSession(currentSession);
+                }
+            } catch (error) {
+                console.error('Error al cargar la sesión:', error);
+            }
+        };
+
+        initAuth();
+
+        const unsubscribe = subscribeToAuth((nextSession) => {
+            if (isMounted) {
+                setSession(nextSession);
+            }
+        });
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!session) return;
+        // Establecer currentUserId desde la sesión
+        if (session?.user) {
+            setCurrentUserId(session.user.id);
+        }
+    }, [session]);
 
     /* Cargar usuarios */
     async function loadUsers() {
@@ -17,7 +60,6 @@ export default function AdminUsers() {
 
         setUsers(data || []);
         setLoading(false);
-        console.log(data);
     }
 
     /* Manejar cambio de rol */
@@ -39,25 +81,36 @@ export default function AdminUsers() {
         setUpdatingUser(null);
     } /* con esta funcion de manejo de roles hacemos que solo tengamos que hacer una peticion a la base de datos para modificar el rol sin antes volver a cargar la lista de usuarios */
 
-    /* Cargar el usuario actual */
-    async function loadCurrentUser() {
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
-        if (user) {
-            setCurrentUserId(user.id);
-        }
-    }
-
     useEffect(() => {
         loadUsers();
-        loadCurrentUser();
     }, []);
+
+    /* cargar las tareas del usuario actual */
+    async function handleViewTasks(user) {
+        setSelectedUser(user);
+        try {
+            const todos = await getTodosByUser(user.id);
+            setSelectedUserTodos(todos || []);
+        } catch (error) {
+            console.error("Error obteniendo tareas del usuario:", error);
+            setSelectedUserTodos([]);
+        }
+        setViewOpen(true);
+    }
+
+    /* Manejar cierre de sesión */
+    const handleSignOut = async () => {
+        try {
+            await signOutUser();
+            setSession(null);
+        } catch (error) {
+            console.error('Error cerrando sesión:', error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
-            <Navbar />
+            <Header session={session} onSignOut={handleSignOut} setAuthMode={setAuthMode} />
 
             <main className="mx-auto max-w-7xl px-6 py-8">
                 {/* Header */}
@@ -161,7 +214,6 @@ export default function AdminUsers() {
                                                         }`}
                                                 >
                                                     {user.role}
-                                                    {console.log(user.role)}
                                                 </span>
                                             </td>
 
@@ -179,16 +231,31 @@ export default function AdminUsers() {
                                                 >
                                                     <option value="user">Usuario</option>
                                                     <option value="admin">Administrador</option>
+
                                                 </select>
+                                                <button
+                                                    onClick={() => handleViewTasks(user)}
+                                                    className="rounded-lg border border-slate-700 px-3 py-2 m-2 text-sm text-slate-300 transition hover:border-indigo-500 hover:text-indigo-400"
+                                                >
+                                                    Ver tareas
+                                                </button>
                                             </td>
                                         </tr>
+
                                     ))}
                                 </tbody>
+
                             </table>
                         </div>
                     )}
                 </div>
             </main>
+            <UserTashkModal
+                isOpen={viewOpen}
+                onClose={() => setViewOpen(false)}
+                user={selectedUser || { name: 'Usuario' }}
+                todos={selectedUserTodos}
+            />
         </div>
     );
 }

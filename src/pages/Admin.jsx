@@ -151,6 +151,7 @@ const Admin = () => {
         </div>
       ) : (
         <>
+        {/* Panel de administración */}
           <header className="relative overflow-hidden border-b border-white/10 bg-slate-950 px-6 py-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.25)] sm:px-8">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.35),_transparent_35%)]" />
 
@@ -211,7 +212,7 @@ const Admin = () => {
               </div>
             </div>
           </header>
-
+          {/* Contenido principal */}
           <main className="mx-auto max-w-7xl px-6 py-8 sm:px-8">
             <section className="mt-2">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -247,7 +248,7 @@ const Admin = () => {
                     setPriorityFilter={setPriorityFilter}
                     className="rounded-none"
                   />
-
+                  {/* Tabla de tareas */}
                   <table className="w-full min-w-[900px] text-left text-sm">
                     <thead className="border-b border-slate-800 bg-white/[0.02]">
                       <tr className="text-xs uppercase tracking-[0.15em] text-slate-500">

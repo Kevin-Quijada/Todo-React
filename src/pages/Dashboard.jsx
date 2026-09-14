@@ -104,9 +104,10 @@ const Dashboard = () => {
         .slice(0, 5),
     [tasks]
   );
-
+  /* Obtener el nombre del usuario */
   const usuarioNombre = session?.user?.user_metadata?.full_name || session?.user?.email || 'Usuario';
 
+  /* Manejar cierre de sesión */
   const handleSignOut = async () => {
     try {
       await signOutUser();

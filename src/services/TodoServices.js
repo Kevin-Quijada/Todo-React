@@ -130,3 +130,24 @@ export async function deleteTodo(id) {
 
   return true;
 }
+
+/* Obtener una tarea por su usuario id */
+export async function getTodosByUser(userId) {
+  const { data, error } = await supabase
+    .from("todos")
+    .select(`
+      *,
+      categories(id, name, color),
+      assigned_user:profiles!todos_user_id_fkey(id, name),
+      creator:profiles!todos_created_by_fkey(id, name)  
+    `) /* creator:profiles es una relación con la tabla profiles para obtener la información del creador de la tarea */
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error obteniendo tareas del usuario:", error);
+    return [];
+  }
+
+  return data;
+}
