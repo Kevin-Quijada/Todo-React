@@ -1,26 +1,28 @@
 import { supabase } from '../supabaseClient.js';
 
 export async function getCurrentSession() {
-  const { data, error } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
 
   if (error) {
     throw error;
   }
 
-  return data.session;
+  return session;
 }
 
-export function subscribeToAuth(onSessionChange) {
-  const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-    onSessionChange(session);
+export function subscribeToAuth(callback) { /* subscribeToAuth es la función que permite suscribirse a los cambios en el estado de autenticación es decir, se ejecuta cada vez que el estado de autenticación cambia */
+  const { 
+    data: {subscription}
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session);
   });
 
   return () => {
-    authListener.subscription.unsubscribe();
+    subscription.unsubscribe();
   };
 }
 
-export async function signInWithPassword({ email, password }) {
+export async function signInWithPassword({ email, password }) { /* signin es inicio de session */  /* signInWithPassword es la función que permite iniciar sesión con un correo y contraseña */
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -33,7 +35,7 @@ export async function signInWithPassword({ email, password }) {
   return data;
 }
 
-export async function signUpWithPassword({ name, email, password }) {
+export async function signUpWithPassword({ name, email, password }) { /* signup es registro de session */  /* signUpWithPassword es la función que permite registrarse con un nombre, correo y contraseña */
   const { data, error } = await supabase.auth.signUp({
     email,
     password,

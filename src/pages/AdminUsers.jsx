@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-// Navbar removed (not used)
 import UserTashkModal from "../components/UserTashkModal.jsx";
 import { getUsers, updateUserRole, getTodosByUser } from "../services/TodoServices.js";
 import { getCurrentSession, signOutUser, subscribeToAuth } from '../services/AuthServices.js';
@@ -8,7 +7,7 @@ import Header from '../components/Header.jsx';
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [updatingUser, setUpdatingUser] = useState(null);
-    const [currentUserId, setCurrentUserId] = useState(null); /* en estos estados vamos a  */
+    const currentUserId = sessionStorage.getItem('currentUserId'); // Obtener el ID del usuario actual desde sessionStorage el sessionStorage es un almacenamiento web que permite guardar datos en el navegador del usuario de manera temporal, mientras que el localStorage guarda los datos de manera persistente incluso después de cerrar el navegador. En este caso, se utiliza sessionStorage para almacenar el ID del usuario actual durante la sesión activa.
     const [loading, setLoading] = useState(true);
     const [viewOpen, setViewOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -17,9 +16,10 @@ export default function AdminUsers() {
     const [authMode, setAuthMode] = useState('login');
 
     useEffect(() => {
+        loadUsers();
         let isMounted = true;
 
-        const initAuth = async () => {
+        const initAuth = async () => { /* el initAuth es una función asíncrona que se utiliza para inicializar la autenticación */
             try {
                 const currentSession = await getCurrentSession();
                 if (isMounted) {
@@ -44,13 +44,6 @@ export default function AdminUsers() {
         };
     }, []);
 
-    useEffect(() => {
-        if (!session) return;
-        // Establecer currentUserId desde la sesión
-        if (session?.user) {
-            setCurrentUserId(session.user.id);
-        }
-    }, [session]);
 
     /* Cargar usuarios */
     async function loadUsers() {
@@ -58,7 +51,7 @@ export default function AdminUsers() {
 
         const data = await getUsers();
 
-        setUsers(data || []);
+        setUsers(data || []); /* || es el operador de coalescencia nula, que devuelve el valor de la izquierda si es diferente de null o undefined, de lo contrario devuelve el valor de la derecha en este caso [] tiene un valor por defecto */
         setLoading(false);
     }
 
@@ -81,9 +74,15 @@ export default function AdminUsers() {
         setUpdatingUser(null);
     } /* con esta funcion de manejo de roles hacemos que solo tengamos que hacer una peticion a la base de datos para modificar el rol sin antes volver a cargar la lista de usuarios */
 
-    useEffect(() => {
-        loadUsers();
-    }, []);
+    /* Manejar cierre de sesión */
+    const handleSignOut = async () => {
+        try {
+            await signOutUser();
+            setSession(null);
+        } catch (error) {
+            console.error('Error cerrando sesión:', error);
+        }
+    };
 
     /* cargar las tareas del usuario actual */
     async function handleViewTasks(user) {
@@ -98,15 +97,12 @@ export default function AdminUsers() {
         setViewOpen(true);
     }
 
-    /* Manejar cierre de sesión */
-    const handleSignOut = async () => {
-        try {
-            await signOutUser();
-            setSession(null);
-        } catch (error) {
-            console.error('Error cerrando sesión:', error);
-        }
-    };
+    // 1. Filtramos todos los administradores una sola vez
+    const admins = users.filter((user) => user.role === "admin");
+    // 2. Si la lista tiene longitud 1, guardamos el ID del único admin. Si no, null.
+    const lastAdminId = admins.length === 1 ? admins[0].id : null;
+
+    
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
@@ -229,8 +225,12 @@ export default function AdminUsers() {
                                                     }
                                                     className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
-                                                    <option value="user">Usuario</option>
-                                                    <option value="admin">Administrador</option>
+                                                    <option value="user" lastUser={lastAdminId === user.id} disabled={lastAdminId === user.id}> {/* Esta opcion tambien se deberia de modificar en el backend para que no se pueda cambiar desde el html */}
+                                                        Usuario
+                                                    </option>
+                                                    <option value="admin">
+                                                        Administrador
+                                                    </option>
 
                                                 </select>
                                                 <button
