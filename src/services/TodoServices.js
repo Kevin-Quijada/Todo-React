@@ -69,30 +69,49 @@ export async function updateUserRole(userId, newRole) {
 }
 
 /* Funcion para crear una nueva tarea */
+
+/* Funcion para crear una nueva tarea */
 export async function createTodo(todo) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    // Obtener el usuario autenticado
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from("todos")
-    .insert({
+    if (authError) throw authError;
+
+    if (!user) {
+      throw new Error("No hay un usuario autenticado");
+    }
+
+    // Preparar los datos antes de enviarlos a Supabase
+    const todoToInsert = {
       ...todo,
+      user_id: todo.user_id || null,
+      category_id: todo.category_id || null,
       created_by: user.id,
-    })
-    .select(`
-      *,
-      categories(id, name, color),
-      assigned_user:profiles!todos_user_id_fkey(id, name)
-    `) /* assigned_user:profiles!todos_user_id_fkey(id, name) tareas asignadas al usuario en la tabla externa profiles (!) indica una relación forzada o especifica con la tabla profiles */
-    .single(); /* en resumen es una linea de codigo que solo extraera el id y el name del usuario asignado */
+    };
 
-  if (error) {
+    // Insertar la tarea y obtener el registro creado
+    const { data, error } = await supabase
+      .from("todos")
+      .insert(todoToInsert)
+      .select(`
+        *,
+        categories(id, name, color),
+        assigned_user:profiles!todos_user_id_fkey(id, name)
+      `)
+      .single();
+
+    if (error) throw error;
+
+    return data;
+
+  } catch (error) {
     console.error("Error al crear la tarea:", error);
-    return null;
+    throw error;
   }
-
-  return data;
 }
 
 /* Editar una tarea */

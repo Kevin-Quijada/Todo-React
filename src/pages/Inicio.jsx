@@ -174,6 +174,8 @@ export default function Inicio() {
       console.error("Error creando tarea:", error);
       return false;
     }
+    console.log("Datos de la tarea:", todoToInsert);
+    console.log("Usuario autenticado:", user.id);
   }
 
   async function handleUpdateTodo(id, updatedFields) {
@@ -190,7 +192,7 @@ export default function Inicio() {
 
   return (
     <>
-    {/* Header - Navegador */}
+      {/* Header - Navegador */}
       <Header session={session} onSignOut={handleSignOut} setAuthMode={setAuthMode} />
 
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f8fafc_0%,_#eef2ff_28%,_#f8fafc_55%,_#f1f5f9_100%)] text-slate-900">
@@ -199,7 +201,7 @@ export default function Inicio() {
             <UserAuthSection authMode={authMode} setAuthMode={setAuthMode} />
           ) : (
             <>
-            {/* Header - Navegador */}
+              {/* Header - Navegador */}
               <header className="relative mb-8 overflow-hidden rounded-[7px] border border-slate-200/80 bg-slate-950 px-6 py-6 text-white shadow-[0_30px_80px_rgba(15,23,42,0.18)] sm:px-8">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.35),_transparent_35%)]" />
                 <div className="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
@@ -284,6 +286,8 @@ export default function Inicio() {
                     onSave={handleCreateTodo}
                     categories={categories}
                     users={users}
+                    currentUserId={session?.user?.id || ''}
+                    currentUserRole={users.find((user) => user.id === session?.user?.id)?.role || 'user'}
                   />
 
                   {/* Modal único para editar tareas */}

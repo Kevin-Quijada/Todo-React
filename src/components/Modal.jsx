@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 
-const Modal = ({ open, onClose, onSave, users, categories }) => {
+const Modal = ({ open, onClose, onSave, users = [], categories = [], currentUserId = '', currentUserRole = 'user' }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('baja');
   const [status, setStatus] = useState('por_asignar');
   const [categoryId, setCategoryId] = useState('');
-  const [assignedUser, setAssignedUser] = useState("");
+  const [assignedUser, setAssignedUser] = useState('');
+
+  const isAdmin = currentUserRole === 'admin';
 
   useEffect(() => {
     if (!open) return;
@@ -16,7 +18,8 @@ const Modal = ({ open, onClose, onSave, users, categories }) => {
     setPriority('baja');
     setStatus('por_asignar');
     setCategoryId('');
-  }, [open]);
+    setAssignedUser(isAdmin ? '' : currentUserId || '');
+  }, [open, isAdmin, currentUserId]);
 
   if (!open) return null;
 
@@ -26,13 +29,15 @@ const Modal = ({ open, onClose, onSave, users, categories }) => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return;
 
+    const resolvedAssignedUser = isAdmin ? assignedUser || currentUserId : currentUserId;
+
     const saved = await onSave({
       title: trimmedTitle,
       description: description.trim(),
       priority,
       status,
       category_id: categoryId || null,
-      user_id: assignedUser,
+      user_id: resolvedAssignedUser,
     });
 
     if (saved !== false) {
@@ -239,27 +244,38 @@ const Modal = ({ open, onClose, onSave, users, categories }) => {
               </div>
 
               {/* Usuario */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Asignar a
-                </label>
+              {isAdmin ? (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Asignar a
+                  </label>
 
-                <select
-                  value={assignedUser}
-                  onChange={(e) => setAssignedUser(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-900/5"
-                >
-                  <option value="" disabled>
-                    Selecciona un usuario
-                  </option>
-
-                  {users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.name}
+                  <select
+                    value={assignedUser}
+                    onChange={(e) => setAssignedUser(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-900/5"
+                  >
+                    <option value="" disabled>
+                      Selecciona un usuario
                     </option>
-                  ))}
-                </select>
-              </div>
+
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Asignado a
+                  </label>
+                  <div className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700">
+                    {users.find((user) => user.id === currentUserId)?.name || 'Tu cuenta'}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
