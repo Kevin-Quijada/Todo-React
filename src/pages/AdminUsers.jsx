@@ -102,7 +102,7 @@ export default function AdminUsers() {
     // 2. Si la lista tiene longitud 1, guardamos el ID del único admin. Si no, null.
     const lastAdminId = admins.length === 1 ? admins[0].id : null;
 
-    
+
 
     return (
         <div className="min-h-screen bg-slate-950 text-white">
@@ -225,7 +225,7 @@ export default function AdminUsers() {
                                                     }
                                                     className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
-                                                    <option value="user" lastUser={lastAdminId === user.id} disabled={lastAdminId === user.id}> {/* Esta opcion tambien se deberia de modificar en el backend para que no se pueda cambiar desde el html */}
+                                                    <option value="user" disabled={lastAdminId === user.id}> {/* Esta opcion tambien se deberia de modificar en el backend para que no se pueda cambiar desde el html */}
                                                         Usuario
                                                     </option>
                                                     <option value="admin">

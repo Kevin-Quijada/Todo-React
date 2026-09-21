@@ -52,6 +52,7 @@ export async function signUpWithPassword({ name, email, password }) { /* signup 
 
   const user = data.user;
 
+  /* Guardar perfil del usuario */
   if (user?.id) {
     const { error: profileError } = await supabase
       .from('profiles')
